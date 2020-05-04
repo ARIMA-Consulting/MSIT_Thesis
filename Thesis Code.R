@@ -78,7 +78,17 @@ demofit2
 plot(demofitForecast)
 plot(demofit2Forecast)
 
+# Naive Bayes Test
+naiveTest <- naive(NDXTclose, h=30)
+naiveForecast <- forecast(naiveTest, 30)
+plot(naiveForecast)
+naiveForecast
 
+# Seasonal Naive Bayes Test
+snaiveTest <- snaive(NDXTclose, h=30)
+snaiveForecast <- forecast(snaiveTest, 30)
+plot(snaiveForecast)
+snaiveForecast
 
 
 
