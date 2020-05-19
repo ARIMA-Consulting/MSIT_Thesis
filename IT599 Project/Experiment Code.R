@@ -16,13 +16,16 @@ set.seed(1337)
 
 # Gets NASDAQ 100 Technology Sector Index (^NDXT)
 tickers <- c("^NDXT")
-getSymbols(tickers, src = "yahoo", from = '2006-02-21', to = '2020-03-31')
+getSymbols(tickers, src = "yahoo", from = '2006-02-21', to = '2020-04-30')
 
 # Convert to Time Series Object and interpolate missing values
 train <- na.interp(ts(NDXT$NDXT.Close))
 
 # Create Test set for predict next month
-test <- data.frame(tail(train, 20))
+test <- data.frame(tail(train, 21))
+
+# April 2020 Trading days vector
+AprilTradingDays2020 <- c('2020-04-01', '2020-04-02', '2020-04-03', '2020-04-06', '2020-04-07', '2020-04-08', '2020-04-09', '2020-04-13', '2020-04-14', '2020-04-15', '2020-04-16', '2020-04-17', '2020-04-20', '2020-04-21', '2020-04-22', '2020-04-23', '2020-04-24', '2020-04-27', '2020-04-28', '2020-04-29', '2020-04-30')
 
 # Make Cartesian Product of p, d, and q values
 p <- c(0,1,2,3)
@@ -47,6 +50,4 @@ for(i in rownames(cartesianProduct)){
 }
 
 # Gets row of Model with lowest MAPE
-AccuracyDF[which.min(AccuracyDF$MAPE),]
-
-
+BestARIMAmodelRow <- AccuracyDF[which.min(AccuracyDF$MAPE),]
