@@ -8,7 +8,6 @@ library(tseries)
 library(xts)
 library(forecast)
 library(tibble)
-library(stinepack)
 library(ggplot2)
 library(grid)
 library(gridExtra)
@@ -20,6 +19,15 @@ set.seed(1337)
 # Gets NASDAQ 100 Technology Sector Index (^NDXT)
 tickers <- c("^NDXT")
 getSymbols(tickers, src = "yahoo", from = '2006-02-21', to = '2020-04-30')
+
+# Head of NDXT
+head(NDXT)
+
+# Summary of Data
+summary(NDXT)
+
+# Plot Close Price
+plot(NDXT$NDXT.Close)
 
 # Convert to Time Series Object and interpolate missing values
 train <- na.interp(ts(NDXT$NDXT.Close))
@@ -62,21 +70,13 @@ BestARIMAForecast <- forecast(ARIMAmodel19, 20)
 # ETS Model & Forecast
 AANetsModel <- ets(train, model = "AAN")
 AANetsForecast <- forecast(AANetsModel, 20)
-#AANetsForecastDF <- data.frame(AANetsForecast) 
 
 ANNetsModel <- ets(train, model = "ANN")
 ANNetsForecast <- forecast(ANNetsModel, 20)
-#ANNetsForecastDF <- data.frame(ANNetsForecast)
-
-# Plot ETS Predictions
-#plot(AANetsForecast)
-#plot(ANNetsForecast)
 
 # Naive Bayes Model and Forecast
 naiveBayesModel <- naive(train, h=20)
 naiveBayesForecast <- forecast(naiveBayesModel, 20)
-#plot(naiveBayesForecast)
-#naiveBayesForecastDF <- data.frame(naiveBayesForecast)
 
 # Create Testing data Dataframe
 testDF <- data.frame(test)
@@ -90,9 +90,9 @@ AANetsForecastDF <- data.frame(testDF, AANetsForecast)
 ANNetsForecastDF <- data.frame(testDF, ANNetsForecast)
 naiveBayesForecastDF <- data.frame(testDF, naiveBayesForecast)
 
-# Statistical Tests
+#### Statistical Tests ###
 
-# Linear Models, AIC, and BIC
+### Linear Models, AIC, and BIC ###
 # ARIMA
 BestARIMAlm <- lm(Real.Data ~ Point.Forecast, data = BestARIMAForecastDF)
 summary(BestARIMAlm)
@@ -117,7 +117,7 @@ summary(BayesLM)
 AIC(BayesLM)
 BIC(BayesLM)
 
-# ANOVA
+### ANOVA ###
 
 # ARIMA
 BestARIMAanova <- aov(Real.Data ~ Point.Forecast, data = BestARIMAForecastDF)
@@ -135,10 +135,8 @@ summary(ANNanova)
 BayesANOVA <- aov(Real.Data ~ Point.Forecast, data = naiveBayesForecastDF)
 summary(BayesANOVA)
 
-# Plots
-ggplot(data = BestARIMAForecastDF, aes(x = (row.names(BestARIMAForecastDF)), y = Real.Data, group = 1)) + geom_line(color="red") + geom_point() + geom_line(aes(y = Point.Forecast), color = "blue") + geom_line(aes(y = Lo.80), color = "black") + geom_line(aes(y = Hi.80), color = "black") + geom_line(aes(y = Lo.95), color = "gray") + geom_line(aes(y = Hi.95), color = "gray") + labs(title = "Best ARIMA Model Forecast vs Real NDXT Data", x = "Date", y = "Close Price US$")
-
-# This is the best so far
+### Plots ###
+# Best ARIMA
 ggplot(data = BestARIMAForecastDF, aes(x = (row.names(BestARIMAForecastDF)), y = Real.Data, group = 1)) +
   geom_line(color="red") + geom_point() + 
   geom_line(aes(y = Point.Forecast), color = "blue") + 
@@ -150,41 +148,38 @@ ggplot(data = BestARIMAForecastDF, aes(x = (row.names(BestARIMAForecastDF)), y =
   theme(plot.title = element_text(hjust = 0.5)) +
   theme(axis.text.x = element_text(angle = 75, hjust = 1))
 
-ggplot(data = BestARIMAForecastDF, aes(x = (row.names(BestARIMAForecastDF)), group = 1)) +
-  geom_line(aes(y = Real.Data, color="red"), group = 1) +
-  geom_line(aes(y = Point.Forecast, color = "blue"), group = 1) + 
-  geom_line(aes(y = Lo.80, color = c("#000000")), group = 1) + 
-  geom_line(aes(y = Hi.80, color = c("#00000d")), group = 1) + 
-  geom_line(aes(y = Lo.95, color = c("#8c8c8c")), group = 1) + 
-  geom_line(aes(y = Hi.95, color = c("#808080")), group = 1) + 
-  labs(title = "Best ARIMA Model Forecast vs Real NDXT Data", x = "Date", y = "Close Price US$") +
+# ETS AAN
+ggplot(data = AANetsForecastDF, aes(x = (row.names(AANetsForecastDF)), y = Real.Data, group = 1)) +
+  geom_line(color="red") + geom_point() + 
+  geom_line(aes(y = Point.Forecast), color = "blue") + 
+  geom_line(aes(y = Lo.80), color = "black") + 
+  geom_line(aes(y = Hi.80), color = "black") + 
+  geom_line(aes(y = Lo.95), color = "gray") + 
+  geom_line(aes(y = Hi.95), color = "gray") + 
+  labs(title = "ETS 'AAN' Model Forecast vs Real NDXT Data", x = "Date", y = "Close Price US$") +
   theme(plot.title = element_text(hjust = 0.5)) +
   theme(axis.text.x = element_text(angle = 75, hjust = 1))
 
-#Closest I got
-ggplot(data = BestARIMAForecastDF) + 
-  aes(x = (row.names(BestARIMAForecastDF))) +
-  geom_line(aes(y = Real.Data, color = "Real Data", group = 1), color = "red") +
-  geom_line(aes(y = Point.Forecast, color = "Forecast", group = 1)) + 
-  geom_line(aes(y = Lo.80, color = "80% Confidence"), group = 1) + 
-  geom_line(aes(y = Hi.80, color = "80% Confidence"), group = 1) + 
-  geom_line(aes(y = Lo.95, color = "95% Confidence"), group = 1) + 
-  geom_line(aes(y = Hi.95, color = "95% Confidence"), group = 1) + 
-  labs(title = "Best ARIMA Model Forecast vs Real NDXT Data", x = "Date", y = "Close Price US$") +
+# ETS ANN
+ggplot(data = ANNetsForecastDF, aes(x = (row.names(ANNetsForecastDF)), y = Real.Data, group = 1)) +
+  geom_line(color="red") + geom_point() + 
+  geom_line(aes(y = Point.Forecast), color = "blue") + 
+  geom_line(aes(y = Lo.80), color = "black") + 
+  geom_line(aes(y = Hi.80), color = "black") + 
+  geom_line(aes(y = Lo.95), color = "gray") + 
+  geom_line(aes(y = Hi.95), color = "gray") + 
+  labs(title = "ETS 'ANN' Model Forecast vs Real NDXT Data", x = "Date", y = "Close Price US$") +
   theme(plot.title = element_text(hjust = 0.5)) +
   theme(axis.text.x = element_text(angle = 75, hjust = 1))
 
-# Test
-ggplot(data = BestARIMAForecastDF) + 
-  aes(x = (row.names(BestARIMAForecastDF)), group = 1) +
-  geom_line(aes(y = Real.Data), labs(title = "test")) +
-  geom_line(aes(y = Point.Forecast)) + 
-  geom_line(aes(y = Lo.80)) + 
-  geom_line(aes(y = Hi.80)) + 
-  geom_line(aes(y = Lo.95)) + 
-  geom_line(aes(y = Hi.95)) + 
-  labs(title = "Best ARIMA Model Forecast vs Real NDXT Data", x = "Date", y = "Close Price US$") +
+# Naive Bayes
+ggplot(data = naiveBayesForecastDF, aes(x = (row.names(naiveBayesForecastDF)), y = Real.Data, group = 1)) +
+  geom_line(color="red") + geom_point() + 
+  geom_line(aes(y = Point.Forecast), color = "blue") + 
+  geom_line(aes(y = Lo.80), color = "black") + 
+  geom_line(aes(y = Hi.80), color = "black") + 
+  geom_line(aes(y = Lo.95), color = "gray") + 
+  geom_line(aes(y = Hi.95), color = "gray") + 
+  labs(title = "Naive Bayes Model Forecast vs Real NDXT Data", x = "Date", y = "Close Price US$") +
   theme(plot.title = element_text(hjust = 0.5)) +
   theme(axis.text.x = element_text(angle = 75, hjust = 1))
-
-
